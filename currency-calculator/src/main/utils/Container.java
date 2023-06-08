@@ -1,4 +1,6 @@
-package main.service;
+package main.utils;
+
+import main.utils.enums.LexemeType;
 
 public class Container {
     private LexemeType key;
