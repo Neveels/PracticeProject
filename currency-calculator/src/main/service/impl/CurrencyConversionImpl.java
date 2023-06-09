@@ -13,18 +13,20 @@ import java.util.List;
 public class CurrencyConversionImpl implements CurrencyConversion {
 
     private final List<Container> containers;
+    private final ApplicationConfig applicationConfig;
 
     public CurrencyConversionImpl() {
         containers = new ArrayList<>();
+        applicationConfig = new ApplicationConfig();
     }
 
     @Override
-    public double roundOffTheFinalValue(double value) {
-        return Math.round(value * 100.0) / 100.0;
+    public String roundOffTheFinalValue(double value) {
+        return String.format("%.2f", value);
     }
 
     @Override
-    public double getResult(String expression) {
+    public String getResult(String expression) {
         List<Lexeme> lexemes = lexAnalyze(expression);
         LexemeBuffer lexemeBuffer = new LexemeBuffer(lexemes);
         double resultOfExpr = expr(lexemeBuffer);
@@ -38,23 +40,23 @@ public class CurrencyConversionImpl implements CurrencyConversion {
         while (position < expText.length()) {
             char charater = expText.charAt(position);
             switch (charater) {
-                case '(':
+                case '(' -> {
                     lexemes.add(new Lexeme(LexemeType.LEFT_BRACKET, charater));
                     position++;
-                    continue;
-                case ')':
+                }
+                case ')' -> {
                     lexemes.add(new Lexeme(LexemeType.RIGHT_BRACKET, charater));
                     position++;
-                    continue;
-                case '+':
+                }
+                case '+' -> {
                     lexemes.add(new Lexeme(LexemeType.OP_PLUS, charater));
                     position++;
-                    continue;
-                case '-':
+                }
+                case '-' -> {
                     lexemes.add(new Lexeme(LexemeType.OP_MINUS, charater));
                     position++;
-                    continue;
-                case 't':
+                }
+                case 't' -> {
                     final int TO_DOLLARS_LENGTH = 9;
                     final int TO_RUBLES_LENGTH = 8;
                     String dollars = expText.substring(position, position + TO_DOLLARS_LENGTH);
@@ -66,8 +68,8 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         lexemes.add(new Lexeme(LexemeType.toRubles, rubles));
                         position += TO_RUBLES_LENGTH;
                     }
-                    continue;
-                default:
+                }
+                default -> {
                     if (charater == '$') {
                         position++;
                     }
@@ -89,6 +91,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         }
                         position++;// If we found white space, just skip it
                     }
+                }
             }
         }
         lexemes.add(new Lexeme(LexemeType.EOF, ""));
@@ -122,7 +125,6 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                 }
             }
         }
-
     }
 
     private double factor(LexemeBuffer lexemes) {
@@ -145,7 +147,6 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                                 + " at position: " + lexemes.getPosition());
                     }
                     LexemeType key = containers.get(containers.size() - 1).getKey();
-
                     //to rubles
                     if (key.equals(LexemeType.toRubles)) {
                         if (containers.size() == 1) {
@@ -157,13 +158,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         containers.remove(containers.size() - 1);
                         double rubles = toRubles(containerWithRubles.getValue());
                         containerWithRubles.setValue(rubles);
-                        containers.set(containers.size() - 1,
-                                new Container(
-                                        containers.get(containers.size() - 1).getKey(),
-                                        containers.get(containers.size() - 1).getValue() + containerWithRubles.getValue()
-                                )
-                        );
-//                        System.out.println("Container with rubles: key - " + containerWithRubles.getKey() + ", value - " + containerWithRubles.getValue() + "р");
+                        setValueToLastPosition(containerWithRubles.getValue());
                     }
                     //to dollars
                     if (key.equals(LexemeType.toDollars)) {
@@ -176,13 +171,8 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         double dollars = toDollars(containerWithDollars.getValue());
                         containerWithDollars.setValue(dollars);
                         containers.remove(containers.size() - 1);
-                        containers.set(containers.size() - 1,
-                                new Container(
-                                        containers.get(containers.size() - 1).getKey(),
-                                        containers.get(containers.size() - 1).getValue() + containerWithDollars.getValue()
-                                )
-                        );
-//                        System.out.println("Container with dollars: key - " + containerWithDollars.getKey() + ", value - " + containerWithDollars.getValue() + "$");
+
+                        setValueToLastPosition(containerWithDollars.getValue());
                     }
                     return value;
                 }
@@ -194,6 +184,16 @@ public class CurrencyConversionImpl implements CurrencyConversion {
         }
     }
 
+    private void setValueToLastPosition(double containerWithDollars) {
+        Container lastContainerAfterRemoveTheLastOne = containers.get(containers.size() - 1);
+        containers.set(containers.size() - 1,
+                new Container(
+                        lastContainerAfterRemoveTheLastOne.getKey(),
+                        lastContainerAfterRemoveTheLastOne.getValue() + containerWithDollars
+                )
+        );
+    }
+
     private double toRubles(double value) {
         return value * exchangeRate();
     }
@@ -203,7 +203,6 @@ public class CurrencyConversionImpl implements CurrencyConversion {
     }
 
     private double exchangeRate() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
         return applicationConfig.readFromFile();
     }
 

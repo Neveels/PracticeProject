@@ -1,7 +1,5 @@
 package main.utils;
 
-import main.utils.Lexeme;
-
 import java.util.List;
 
 public class LexemeBuffer {

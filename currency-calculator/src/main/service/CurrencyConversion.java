@@ -1,7 +1,7 @@
 package main.service;
 
 public interface CurrencyConversion {
-    double roundOffTheFinalValue(double value);
+    String roundOffTheFinalValue(double value);
 
-    double getResult(String expression);
+    String getResult(String expression);
 }
