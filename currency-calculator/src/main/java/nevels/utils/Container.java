@@ -1,6 +1,7 @@
-package main.utils;
+package nevels.utils;
 
-import main.utils.enums.LexemeType;
+
+import nevels.utils.enums.LexemeType;
 
 public class Container {
     private LexemeType key;

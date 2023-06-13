@@ -1,6 +1,6 @@
-package main.utils;
+package nevels.utils;
 
-import main.utils.enums.LexemeType;
+import nevels.utils.enums.LexemeType;
 
 public class Lexeme {
     public LexemeType type;

@@ -1,12 +1,9 @@
-package main;
+package nevels;
 
+import nevels.service.CurrencyConversion;
+import nevels.service.impl.CurrencyConversionImpl;
 
-import main.service.CurrencyConversion;
-import main.service.impl.CurrencyConversionImpl;
-
-import java.util.ArrayList;
 import java.util.List;
-
 
 public class Application {
 

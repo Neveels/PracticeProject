@@ -1,4 +1,4 @@
-package main.utils.enums;
+package nevels.utils.enums;
 
 public enum LexemeType {
     LEFT_BRACKET, RIGHT_BRACKET,

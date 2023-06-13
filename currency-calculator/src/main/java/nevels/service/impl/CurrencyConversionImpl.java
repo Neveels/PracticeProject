@@ -1,11 +1,12 @@
-package main.service.impl;
+package nevels.service.impl;
 
-import main.config.ApplicationConfig;
-import main.service.CurrencyConversion;
-import main.utils.Container;
-import main.utils.Lexeme;
-import main.utils.LexemeBuffer;
-import main.utils.enums.LexemeType;
+import nevels.config.ApplicationConfig;
+import nevels.exception.BusinessException;
+import nevels.service.CurrencyConversion;
+import nevels.utils.Container;
+import nevels.utils.Lexeme;
+import nevels.utils.LexemeBuffer;
+import nevels.utils.enums.LexemeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         lexemes.add(new Lexeme(LexemeType.NUMBER, stringBuilder.toString()));
                     } else {
                         if (charater != ' ' && charater != 'р' && charater != '$') {
-                            throw new RuntimeException("Unexpected character: " + charater);
+                            throw new BusinessException("Unexpected character: " + charater);
                         }
                         position++;// If we found white space, just skip it
                     }
@@ -143,7 +144,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                     double value = expr(lexemes);
                     lexeme = lexemes.next();
                     if (lexeme.type != LexemeType.RIGHT_BRACKET) {
-                        throw new RuntimeException("Unexpected token: " + lexeme.value
+                        throw new BusinessException("Unexpected token: " + lexeme.value
                                 + " at position: " + lexemes.getPosition());
                     }
                     LexemeType key = containers.get(containers.size() - 1).getKey();
@@ -178,7 +179,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                 }
                 case toDollars -> containers.add(new Container(LexemeType.toDollars, 0));
                 case toRubles -> containers.add(new Container(LexemeType.toRubles, 0));
-                default -> throw new RuntimeException("Unexpected token: " + lexeme.value
+                default -> throw new BusinessException("Unexpected token: " + lexeme.value
                         + " at position: " + lexemes.getPosition());
             }
         }
