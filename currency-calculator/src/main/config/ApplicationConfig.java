@@ -6,6 +6,7 @@ import java.util.Properties;
 
 public class ApplicationConfig {
     static final String FILE_NAME = "C:\\Users\\Nevels\\IdeaProjects\\Modsen\\currency-calculator\\src\\resourses\\application.properties";
+    final String CURRENCY_DOLLAR = "currency.dollar";
 
     public double readFromFile() {
         Properties prop = new Properties();
@@ -14,6 +15,6 @@ public class ApplicationConfig {
         } catch (IOException ex) {
             System.out.println(ex);
         }
-        return Double.parseDouble(prop.getProperty("currency.dollar"));
+        return Double.parseDouble(prop.getProperty(CURRENCY_DOLLAR));
     }
 }
