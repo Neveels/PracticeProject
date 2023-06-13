@@ -13,12 +13,8 @@ public class Application {
         currencyConversion = new CurrencyConversionImpl();
     }
 
-    public void run(List<String> testCases) {
-        int iterator = 0;
-        while (iterator < testCases.size()) {
-            String result = currencyConversion.getResult(testCases.get(iterator));
-            System.out.println("Case: " + ++iterator + " -> Expression: " + testCases.get(iterator - 1) + ", result: " + result);
-        }
+    public void run(String string) {
+        System.out.println(currencyConversion.getResult(string));
     }
 
 }
