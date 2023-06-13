@@ -21,7 +21,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
     }
 
     @Override
-    public String roundOffTheFinalValue(double value) {
+    public String roundFinalValue(double value) {
         return String.format("%.2f", value);
     }
 
@@ -30,7 +30,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
         List<Lexeme> lexemes = lexAnalyze(expression);
         LexemeBuffer lexemeBuffer = new LexemeBuffer(lexemes);
         double resultOfExpr = expr(lexemeBuffer);
-        return roundOffTheFinalValue(resultOfExpr);
+        return this.roundFinalValue(resultOfExpr);
     }
 
 
