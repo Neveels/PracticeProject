@@ -15,6 +15,8 @@ public class CurrencyConversionImpl implements CurrencyConversion {
 
     private final List<Container> containers;
     private final ApplicationConfig applicationConfig;
+    private final int TO_DOLLARS_LENGTH = LexemeType.TO_DOLLARS.getString().length();
+    private final int TO_RUBLES_LENGTH = LexemeType.TO_RUBLES.getString().length();
 
     public CurrencyConversionImpl() {
         containers = new ArrayList<>();
@@ -26,7 +28,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
         List<Lexeme> lexemes = lexAnalyze(expression);
         LexemeBuffer lexemeBuffer = new LexemeBuffer(lexemes);
         double resultOfExpr = expr(lexemeBuffer);
-        return this.roundFinalValue(resultOfExpr);
+        return roundFinalValue(resultOfExpr);
     }
 
 
@@ -41,8 +43,6 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                 position++;
             } else {
                     if(charater == 't') {
-                        final int TO_DOLLARS_LENGTH = 9;
-                        final int TO_RUBLES_LENGTH = 8;
                         String dollars = expText.substring(position, position + TO_DOLLARS_LENGTH);
                         String rubles = expText.substring(position, position + TO_RUBLES_LENGTH);
                         if (dollars.equals(LexemeType.TO_DOLLARS.getString())) {
