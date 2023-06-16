@@ -20,13 +20,13 @@ public class CurrencyConversionImpl implements CurrencyConversion {
 
     private final List<Container> containers;
     private final ApplicationConfig applicationConfig;
-    private static final Set<String> MAIN_CHARACTERS = Set.of("(", ")", "+", "-");
-    private static final Set<String> WHITESPACE_CHARACTERS = Set.of(" ", "р", "$");
-    private static final Set<String> DIGITS = Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
-    private static final int DOLLARS_LENGTH = TO_DOLLARS.getString().length();
-    private static final int RUBLES_LENGTH = TO_RUBLES.getString().length();
-    public static final String UNEXPECTED_CHARACTER_EXCEPTION = "Unexpected character %s ";
-    public static final String UNEXPECTED_TOKEN_EXCEPTION = "Unexpected token %s at position %d";
+    private final Set<String> MAIN_CHARACTERS = Set.of("(", ")", "+", "-");
+    private final Set<String> WHITESPACE_CHARACTERS = Set.of(" ", "р", "$");
+    private final Set<String> DIGITS = Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+    private final int DOLLARS_LENGTH = TO_DOLLARS.getString().length();
+    private final int RUBLES_LENGTH = TO_RUBLES.getString().length();
+    public final String UNEXPECTED_CHARACTER_EXCEPTION = "Unexpected character %s ";
+    public final String UNEXPECTED_TOKEN_EXCEPTION = "Unexpected token %s at position %d";
 
     public CurrencyConversionImpl() {
         containers = new ArrayList<>();
