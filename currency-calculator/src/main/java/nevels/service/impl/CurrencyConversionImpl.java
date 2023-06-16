@@ -15,16 +15,18 @@ import java.util.Set;
 import static nevels.utils.enums.LexemeType.TO_DOLLARS;
 import static nevels.utils.enums.LexemeType.TO_RUBLES;
 
+
 public class CurrencyConversionImpl implements CurrencyConversion {
 
     private final List<Container> containers;
     private final ApplicationConfig applicationConfig;
-    private final int TO_DOLLARS_LENGTH = TO_DOLLARS.getString().length();
-    private final int TO_RUBLES_LENGTH = TO_RUBLES.getString().length();
-    private final Set<String> MAIN_CHARACTERS = Set.of("(", ")", "+", "-");
-    private final Set<String> WHITESPACE_CHARACTERS = Set.of(" ", "р", "$");
-    private final Set<String> DIGITS = Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
-
+    private static final Set<String> MAIN_CHARACTERS = Set.of("(", ")", "+", "-");
+    private static final Set<String> WHITESPACE_CHARACTERS = Set.of(" ", "р", "$");
+    private static final Set<String> DIGITS = Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+    private static final int DOLLARS_LENGTH = TO_DOLLARS.getString().length();
+    private static final int RUBLES_LENGTH = TO_RUBLES.getString().length();
+    public static final String UNEXPECTED_CHARACTER_EXCEPTION = "Unexpected character %s ";
+    public static final String UNEXPECTED_TOKEN_EXCEPTION = "Unexpected token %s at position %d";
 
     public CurrencyConversionImpl() {
         containers = new ArrayList<>();
@@ -50,14 +52,14 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                 position++;
             } else {
                 if (symbol.equals("t")) {
-                    String dollars = expText.substring(position, position + TO_DOLLARS_LENGTH);
-                    String rubles = expText.substring(position, position + TO_RUBLES_LENGTH);
+                    String dollars = expText.substring(position, position + DOLLARS_LENGTH);
+                    String rubles = expText.substring(position, position + RUBLES_LENGTH);
                     if (dollars.equals(TO_DOLLARS.getString())) {
                         lexemes.add(new Lexeme(TO_DOLLARS, dollars));
-                        position += TO_DOLLARS_LENGTH;
+                        position += DOLLARS_LENGTH;
                     } else {
                         lexemes.add(new Lexeme(TO_RUBLES, rubles));
-                        position += TO_RUBLES_LENGTH;
+                        position += RUBLES_LENGTH;
                     }
                     continue;
                 }
@@ -81,7 +83,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         position++;// If we found white space, just skip it
                         continue;
                     }
-                    throw new BusinessException("Unexpected character: " + symbol);
+                    throw new BusinessException(String.format(UNEXPECTED_CHARACTER_EXCEPTION, symbol));
                 }
             }
         }
@@ -134,8 +136,11 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                     double value = expr(lexemes);
                     lexeme = lexemes.next();
                     if (lexeme.type != LexemeType.RIGHT_BRACKET) {
-                        throw new BusinessException("Unexpected token: " + lexeme.value
-                                + " at position: " + lexemes.getPosition());
+                        throw new BusinessException(String.format(
+                                UNEXPECTED_TOKEN_EXCEPTION,
+                                lexeme.value,
+                                lexemes.getPosition())
+                        );
                     }
                     LexemeType key = containers.get(containers.size() - 1).getKey();
                     //to rubles
@@ -169,8 +174,11 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                 }
                 case TO_DOLLARS -> containers.add(new Container(TO_DOLLARS, 0));
                 case TO_RUBLES -> containers.add(new Container(TO_RUBLES, 0));
-                default -> throw new BusinessException("Unexpected token: " + lexeme.value
-                        + " at position: " + lexemes.getPosition());
+                default -> throw new BusinessException(String.format(
+                        UNEXPECTED_TOKEN_EXCEPTION,
+                        lexeme.value,
+                        lexemes.getPosition())
+                );
             }
         }
     }
