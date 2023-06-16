@@ -10,13 +10,23 @@ import nevels.utils.enums.LexemeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import static nevels.utils.enums.LexemeType.TO_DOLLARS;
+import static nevels.utils.enums.LexemeType.TO_RUBLES;
+
 
 public class CurrencyConversionImpl implements CurrencyConversion {
 
     private final List<Container> containers;
     private final ApplicationConfig applicationConfig;
-    private final int TO_DOLLARS_LENGTH = LexemeType.TO_DOLLARS.getString().length();
-    private final int TO_RUBLES_LENGTH = LexemeType.TO_RUBLES.getString().length();
+    private final Set<String> MAIN_CHARACTERS = Set.of("(", ")", "+", "-");
+    private final Set<String> WHITESPACE_CHARACTERS = Set.of(" ", "р", "$");
+    private final Set<String> DIGITS = Set.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+    private final int DOLLARS_LENGTH = TO_DOLLARS.getString().length();
+    private final int RUBLES_LENGTH = TO_RUBLES.getString().length();
+    public final String UNEXPECTED_CHARACTER_EXCEPTION = "Unexpected character %s ";
+    public final String UNEXPECTED_TOKEN_EXCEPTION = "Unexpected token %s at position %d";
 
     public CurrencyConversionImpl() {
         containers = new ArrayList<>();
@@ -35,45 +45,45 @@ public class CurrencyConversionImpl implements CurrencyConversion {
     private List<Lexeme> lexAnalyze(String expText) {
         List<Lexeme> lexemes = new ArrayList<>();
         int position = 0;
-
         while (position < expText.length()) {
-            char charater = expText.charAt(position);
-            if (charater == '(' || charater == '+' || charater == '-' || charater == ')') {
-                lexemes.add(new Lexeme(LexemeType.getFromChar(String.valueOf(charater)), charater));
+            String symbol = String.valueOf(expText.charAt(position));
+            if (MAIN_CHARACTERS.contains(symbol)) {
+                lexemes.add(new Lexeme(LexemeType.getFromChar(symbol), symbol));
                 position++;
             } else {
-                if (charater == 't') {
-                    String dollars = expText.substring(position, position + TO_DOLLARS_LENGTH);
-                    String rubles = expText.substring(position, position + TO_RUBLES_LENGTH);
-                    if (dollars.equals(LexemeType.TO_DOLLARS.getString())) {
-                        lexemes.add(new Lexeme(LexemeType.TO_DOLLARS, dollars));
-                        position += TO_DOLLARS_LENGTH;
+                if (symbol.equals("t")) {
+                    String dollars = expText.substring(position, position + DOLLARS_LENGTH);
+                    String rubles = expText.substring(position, position + RUBLES_LENGTH);
+                    if (dollars.equals(TO_DOLLARS.getString())) {
+                        lexemes.add(new Lexeme(TO_DOLLARS, dollars));
+                        position += DOLLARS_LENGTH;
                     } else {
-                        lexemes.add(new Lexeme(LexemeType.TO_RUBLES, rubles));
-                        position += TO_RUBLES_LENGTH;
+                        lexemes.add(new Lexeme(TO_RUBLES, rubles));
+                        position += RUBLES_LENGTH;
                     }
                     continue;
                 }
-                if (charater == '$') {
+                if (symbol.equals("$")) {
                     position++;
                 }
-                charater = expText.charAt(position);
-                if (charater <= '9' && charater >= '0') {
+                symbol = String.valueOf(expText.charAt(position));
+                if (DIGITS.contains(symbol)) {
                     StringBuilder stringBuilder = new StringBuilder();
                     do {
-                        stringBuilder.append(charater);
+                        stringBuilder.append(symbol);
                         position++;
                         if (position >= expText.length()) {
                             break;
                         }
-                        charater = expText.charAt(position);
-                    } while (charater <= '9' && charater >= '0' || charater == ',');
+                        symbol = String.valueOf(expText.charAt(position));
+                    } while (DIGITS.contains(symbol) || symbol.equals(","));
                     lexemes.add(new Lexeme(LexemeType.NUMBER, stringBuilder.toString()));
                 } else {
-                    if (charater != ' ' && charater != 'р' && charater != '$') {
-                        throw new BusinessException("Unexpected character: " + charater);
+                    if (WHITESPACE_CHARACTERS.contains(symbol)) {
+                        position++;// If we found white space, just skip it
+                        continue;
                     }
-                    position++;// If we found white space, just skip it
+                    throw new BusinessException(String.format(UNEXPECTED_CHARACTER_EXCEPTION, symbol));
                 }
             }
         }
@@ -126,12 +136,15 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                     double value = expr(lexemes);
                     lexeme = lexemes.next();
                     if (lexeme.type != LexemeType.RIGHT_BRACKET) {
-                        throw new BusinessException("Unexpected token: " + lexeme.value
-                                + " at position: " + lexemes.getPosition());
+                        throw new BusinessException(String.format(
+                                UNEXPECTED_TOKEN_EXCEPTION,
+                                lexeme.value,
+                                lexemes.getPosition())
+                        );
                     }
                     LexemeType key = containers.get(containers.size() - 1).getKey();
                     //to rubles
-                    if (key.equals(LexemeType.TO_RUBLES)) {
+                    if (key.equals(TO_RUBLES)) {
                         if (containers.size() == 1) {
                             value = toRubles(containers.get(0).getValue());
                             containers.remove(0);
@@ -144,7 +157,7 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                         setValueToLastPosition(containerWithRubles.getValue());
                     }
                     //to dollars
-                    if (key.equals(LexemeType.TO_DOLLARS)) {
+                    if (key.equals(TO_DOLLARS)) {
                         if (containers.size() == 1) {
                             value = toDollars(containers.get(0).getValue());
                             containers.remove(0);
@@ -159,10 +172,13 @@ public class CurrencyConversionImpl implements CurrencyConversion {
                     }
                     return value;
                 }
-                case TO_DOLLARS -> containers.add(new Container(LexemeType.TO_DOLLARS, 0));
-                case TO_RUBLES -> containers.add(new Container(LexemeType.TO_RUBLES, 0));
-                default -> throw new BusinessException("Unexpected token: " + lexeme.value
-                        + " at position: " + lexemes.getPosition());
+                case TO_DOLLARS -> containers.add(new Container(TO_DOLLARS, 0));
+                case TO_RUBLES -> containers.add(new Container(TO_RUBLES, 0));
+                default -> throw new BusinessException(String.format(
+                        UNEXPECTED_TOKEN_EXCEPTION,
+                        lexeme.value,
+                        lexemes.getPosition())
+                );
             }
         }
     }
